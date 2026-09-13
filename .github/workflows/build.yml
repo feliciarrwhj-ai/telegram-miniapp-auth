@@ -1,0 +1,44 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Validate HTML
+      run: |
+        npm install -g html-validate
+        html-validate index.html || true
+    
+    - name: Check CSS
+      run: |
+        npm install -g stylelint stylelint-config-standard
+        stylelint "styles.css" || true
+    
+    - name: Validate JavaScript
+      run: |
+        npm install -g eslint
+        eslint app.js || true
+    
+    - name: Create artifact
+      run: |
+        mkdir -p build
+        cp index.html build/
+        cp styles.css build/
+        cp app.js build/
+        cp package.json build/
+        cp README.md build/
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: mini-app
+        path: build/
