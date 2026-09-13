@@ -1,0 +1,28 @@
+{
+  "name": "telegram-miniapp-auth",
+  "version": "1.0.0",
+  "description": "Complete Telegram Mini App with age verification, 5-digit code input, and 2FA password authentication",
+  "main": "app.js",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "npx http-server -p 8000 --ssl",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "telegram",
+    "mini-app",
+    "authentication",
+    "2fa",
+    "web-app"
+  ],
+  "author": "feliciarrwhj-ai",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/feliciarrwhj-ai/telegram-miniapp-auth.git"
+  },
+  "bugs": {
+    "url": "https://github.com/feliciarrwhj-ai/telegram-miniapp-auth/issues"
+  },
+  "homepage": "https://github.com/feliciarrwhj-ai/telegram-miniapp-auth#readme"
+}
